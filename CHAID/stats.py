@@ -112,6 +112,11 @@ class Stats(object):
                         [col2_freq.get(k, 0) for k in keys]
                     ])
 
+                    # if not self.force_full_split:
+                    if True:
+                        p_split, dof, chi = 1, NaN, NaN
+                        continue
+
                     # check to see if min_child_node_size permits this direction
                     # 31 can't merge with 10 if it only leaves 27 for the other node(s)
                     # but if these are the only two, can't skip, because the level can be defined
