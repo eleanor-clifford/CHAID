@@ -37,6 +37,7 @@ class Node(object):
         self.parent = parent
         self.dep_v = dep_v
         self._members = None
+        self._is_terminal = None
 
     def __hash__(self):
         return hash(self.__dict__)
@@ -68,7 +69,10 @@ class Node(object):
 
     @property
     def is_terminal(self):
-        return not self.split.valid()
+        if self._is_terminal is not None:
+            return self._is_terminal
+        else:
+            return not self.split.valid()
 
     @property
     def members(self):

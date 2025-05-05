@@ -121,6 +121,34 @@ class Tree(object):
         self._tree_store = []
         self.node(np.arange(0, self.data_size, dtype=np.int64), self.vectorised_array, self.observed)
 
+    def destroy_node(self, node_idx):
+        for node in self:
+            if node.parent == node_idx:
+                self.destroy_node(node.node_id)
+
+        self.tree_store[node_idx] = None
+
+    def prune_tree(self, node_idx=0, allow_equal=True):
+        def _max_keys(d):
+            return set(key for key, value in d.items() if value == max(d.values()))
+
+        children = [node.node_id for node in self if node.parent == node_idx]
+
+        if len(children) == 0:
+            classes = _max_keys(self.tree_store[node_idx].members)
+        else:
+            classes = set.intersection(*(self.prune_tree(c, allow_equal) for c in children))
+
+        if len(classes) > 1 and not allow_equal:
+            classes = set()
+
+        if len(classes) > 0:
+            self.tree_store[node_idx]._is_terminal = True
+            for c in children:
+                self.destroy_node(c)
+
+        return classes
+
     @property
     def tree_store(self):
         if not self._tree_store:
@@ -222,13 +250,13 @@ class Tree(object):
     def to_tree(self):
         """ returns a TreeLib tree """
         tree = TreeLibTree()
-        for node in self:
-            tree.create_node(node, node.node_id, parent=node.parent)
+        for i, node in enumerate(self):
+            tree.create_node(node, i, parent=node.parent)
         return tree
 
     def __iter__(self):
         """ Function to allow nodes to be iterated over """
-        return iter(self.tree_store)
+        return iter([i for i in self.tree_store if i is not None])
 
     def __repr__(self):
         return str(self.tree_store)
