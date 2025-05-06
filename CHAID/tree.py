@@ -247,11 +247,27 @@ class Tree(object):
         """ internal method to generate the best split """
         return self._stats.best_split(ind, dep)
 
+    def reindex_nodes(self):
+        index_map = {}
+        new_nodes = []
+        for i, node in enumerate(self):
+            index_map[node.node_id] = i
+            node.node_id = i
+            new_nodes.append(node)
+
+        for node in new_nodes:
+            if node.parent:
+                node.parent = index_map[node.parent]
+
+        self._tree_store = new_nodes
+
+
     def to_tree(self):
         """ returns a TreeLib tree """
+        self.reindex_nodes()
         tree = TreeLibTree()
-        for i, node in enumerate(self):
-            tree.create_node(node, i, parent=node.parent)
+        for node in self:
+            tree.create_node(node, node.node_id, parent=node.parent)
         return tree
 
     def __iter__(self):
